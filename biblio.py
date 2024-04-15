@@ -19,7 +19,7 @@ class Bibliotheque:
 
     def supprimer_livre(self, titre):
         for livre in self.livres:
-            if livre.titre == titre:
+            if livre.titre == titre:    
                 self.livres.remove(livre)
                 print("Livre supprimé de la bibliothèque.")
                 return
