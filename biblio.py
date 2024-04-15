@@ -1,3 +1,5 @@
+import json
+
 class Livre:
     def __init__(self, auteur, titre, contenu):
         self.auteur = auteur
@@ -41,6 +43,10 @@ class Bibliotheque:
         for livre in self.livres:
             print("- ", livre.titre, "par", livre.auteur)
 
+    def sauvegarder_bibliotheque(self, nom_fichier):
+        with open(nom_fichier, 'w') as f:
+            json.dump([{'auteur': livre.auteur, 'titre': livre.titre, 'contenu': livre.contenu} for livre in self.livres], f)
+
 def saisie_livre():
     auteur = input("Entrez le nom de l'auteur : ")
     titre = input("Entrez le titre du livre : ")
@@ -55,7 +61,8 @@ while True:
     print("2. Supprimer un livre")
     print("3. Modifier un livre")
     print("4. Afficher les livres")
-    print("5. Quitter")
+    print("5. Sauvegarder la bibliothèque en JSON")
+    print("6. Quitter")
 
     choix = input("Votre choix : ")
 
@@ -71,6 +78,10 @@ while True:
     elif choix == "4":
         bibliotheque.afficher_livres()
     elif choix == "5":
+        nom_fichier = input("Entrez le nom du fichier JSON pour sauvegarder la bibliothèque : ")
+        bibliotheque.sauvegarder_bibliotheque(nom_fichier)
+        print("Bibliothèque sauvegardée avec succès.")
+    elif choix == "6":
         print("Merci d'avoir utilisé notre application.")
         break
     else:
