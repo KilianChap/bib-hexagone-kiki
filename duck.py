@@ -28,7 +28,8 @@ class Silent(QuackBehavior):
 
 
 class Canard(ABC):
-    def __init__(self, flybehavior, quackbehavior):
+    def __init__(self, nom, flybehavior, quackbehavior):
+        self.nom = nom
         self.flybehavior = flybehavior
         self.quackbehavior = quackbehavior
 
@@ -39,20 +40,22 @@ class Canard(ABC):
         return self.quackbehavior.quack()
 
 
-class CanardVert(Canard):
+class CanardNoir(Canard):
     def __init__(self):
-        super().__init__(flybehavior=Fly2Wings(), quackbehavior=Quack())
+        super().__init__(nom="Canard Noir", flybehavior=Fly2Wings(), quackbehavior=Quack())
 
-class CanardBleu(Canard):
+class CanardBlanc(Canard):
     def __init__(self):
-        super().__init__(flybehavior=FlyNone(), quackbehavior=Silent())
+        super().__init__(nom="Canard Blanc", flybehavior=FlyNone(), quackbehavior=Silent())
 
 
 # Exemple d'utilisation
-canard_vert = CanardVert()
-print(canard_vert.perform_fly())    # Output: Je vole avec mes deux ailes
-print(canard_vert.perform_quack())  # Output: Je fais coin coin
+canard_Noir = CanardNoir()
+print(canard_Noir.nom)              # Output: Canard Noir
+print(canard_Noir.perform_fly())    # Output: Je vole avec mes deux ailes
+print(canard_Noir.perform_quack())  # Output: Je fais coin coin
 
-canard_bleu = CanardBleu()
-print(canard_bleu.perform_fly())    # Output: Je ne peux pas voler
-print(canard_bleu.perform_quack())  # Output: Je suis silencieux
+canard_Blanc = CanardBlanc()
+print(canard_Blanc.nom)              # Output: Canard Blanc
+print(canard_Blanc.perform_fly())    # Output: Je ne peux pas voler
+print(canard_Blanc.perform_quack())  # Output: Je suis silencieux
