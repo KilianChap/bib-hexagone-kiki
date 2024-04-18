@@ -1,0 +1,168 @@
+MCD
+Entités :
+    Client (ID_Client, Nom, Age)
+    Jeu (ID_Jeu, Nom, ID_Editeur)
+    Editeur (ID_Editeur, Nom)
+    Achat (ID_Achat, ID_Client, ID_Jeu, Date_Achat)
+    Note (ID_Note, ID_Jeu, ID_Client, Note)
+Associations :
+    Un client achète un ou plusieurs jeux.
+    Un jeu est publié par un éditeur.
+    Un achat concerne un ou plusieurs jeux.
+    Un client peut noter un jeu.
+
+MLD
+    Tables :
+        Client (ID_Client, Nom, Age)
+        Jeu (ID_Jeu, Nom, ID_Editeur)
+        Editeur (ID_Editeur, Nom)
+        Achat (ID_Achat, ID_Client, ID_Jeu, Date_Achat)
+        Note (ID_Note, ID_Jeu, ID_Client, Note)
+
+Schéma SQL
+    CREATE TABLE Client (
+        ID_Client SERIAL PRIMARY KEY,
+        Nom VARCHAR(100) NOT NULL,
+        Age INTEGER NOT NULL CHECK (Age >= 18)
+    );
+
+    CREATE TABLE Editeur (
+        ID_Editeur SERIAL PRIMARY KEY,
+        Nom VARCHAR(100) NOT NULL
+    );
+
+    CREATE TABLE Jeu (
+        ID_Jeu SERIAL PRIMARY KEY,
+        Nom VARCHAR(100) NOT NULL,
+        ID_Editeur INTEGER REFERENCES Editeur(ID_Editeur)
+    );
+
+    CREATE TABLE Achat (
+        ID_Achat SERIAL PRIMARY KEY,
+        ID_Client INTEGER REFERENCES Client(ID_Client),
+        ID_Jeu INTEGER REFERENCES Jeu(ID_Jeu),
+        Date_Achat DATE NOT NULL
+    );
+
+    CREATE TABLE Note (
+        ID_Note SERIAL PRIMARY KEY,
+        ID_Jeu INTEGER REFERENCES Jeu(ID_Jeu),
+        ID_Client INTEGER REFERENCES Client(ID_Client),
+        Note INTEGER NOT NULL CHECK (Note >= 1 AND Note <= 5)
+    );
+
+
+Ajout des datas:
+
+INSERT INTO Client (Nom, Age) VALUES 
+('John', 23),
+('Jenny', 25),
+('Yvan', 62),
+('Yvonne', 67),
+('Jordy', 18);
+
+INSERT INTO Editeur (Nom) VALUES 
+('Tac Toc'),
+('Asmodii');
+
+INSERT INTO Jeu (Nom, ID_Editeur) VALUES 
+('Living Forest', 1),
+('Unlock', 2),
+('Detective', 2),
+('Kirk is missing', 2);
+
+INSERT INTO Achat (ID_Client, ID_Jeu, Date_Achat) VALUES 
+(1, 1, '2010-01-10'),
+(1, 2, '2020-01-20'),
+(2, 3, '2020-01-21');
+
+INSERT INTO Note (ID_Jeu, ID_Client, Note) VALUES
+(1, 1, 4),
+(2, 1, 5),
+(3, 2, 3),
+(4, 2, 4);
+
+
+Noms des clients qui ont un age > 20
+    SELECT Nom FROM Client WHERE Age > 20;
+
+Noms de clients ayant commandé le jeu de société ayant pour id 2
+    SELECT c.Nom
+    FROM Client c
+    JOIN Achat a ON c.ID_Client = a.ID_Client
+    WHERE a.ID_Jeu = 2;
+
+Noms de clients ayant commandé un jeu de société pour 2 joueurs
+    SELECT DISTINCT c.Nom
+FROM Client c
+JOIN Achat a ON c.ID_Client = a.ID_Client
+JOIN Jeu j ON a.ID_Jeu = j.ID_Jeu
+WHERE j.Nom IN ('Detective', 'Unlock');
+
+Types de jeu commandés par Monsieur Dupont
+SELECT DISTINCT j.Nom
+FROM Client c
+JOIN Achat a ON c.ID_Client = a.ID_Client
+JOIN Jeu j ON a.ID_Jeu = j.ID_Jeu
+WHERE c.Nom = 'Dupont';
+
+Noms des clients ayant commandé au moins un jeu
+SELECT DISTINCT c.Nom
+FROM Client c
+JOIN Achat a ON c.ID_Client = a.ID_Client;
+
+
+Noms des clients ayant commandé un jeu de rôle ou un puzzle
+SELECT DISTINCT c.Nom
+FROM Client c
+JOIN Achat a ON c.ID_Client = a.ID_Client
+JOIN Jeu j ON a.ID_Jeu = j.ID_Jeu
+WHERE j.Nom IN ('Living Forest', 'Kirk is missing');
+
+
+Clients ayant commandé au moins 2 jeux de société
+SELECT c.Nom
+FROM Client c
+JOIN (
+    SELECT ID_Client, COUNT(*) AS nb_jeux
+    FROM Achat
+    GROUP BY ID_Client
+    HAVING COUNT(*) >= 2
+) AS a ON c.ID_Client = a.ID_Client;
+
+
+Clients qui ont un âge > 50 et qui n’ont pas commmandé un jeu de société pour 2 joueurs
+SELECT DISTINCT c.Nom
+FROM Client c
+LEFT JOIN Achat a ON c.ID_Client = a.ID_Client
+LEFT JOIN Jeu j ON a.ID_Jeu = j.ID_Jeu
+WHERE c.Age > 50 AND (j.Nom IS NULL OR j.Nom NOT IN ('Detective', 'Unlock'));
+
+
+Clients qui ont commandé tous les jeux de société
+SELECT c.Nom
+FROM Client c
+JOIN (
+    SELECT ID_Client, COUNT(DISTINCT ID_Jeu) AS total_jeux
+    FROM Achat
+    GROUP BY ID_Client
+) AS a ON c.ID_Client = a.ID_Client
+JOIN (
+    SELECT COUNT(*) AS total_jeux
+    FROM Jeu
+) AS j ON a.total_jeux = j.total_jeux;
+
+
+Noms de client qui ont commandé tous les jeux de société de stop ou encore
+SELECT c.Nom
+FROM Client c
+JOIN (
+    SELECT ID_Client, COUNT(DISTINCT ID_Jeu) AS total_jeux
+    FROM Achat
+    GROUP BY ID_Client
+) AS a ON c.ID_Client = a.ID_Client
+JOIN (
+    SELECT COUNT(*) AS total_jeux
+    FROM Jeu
+    WHERE Nom IN ('Stop', 'Encore')
+) AS j ON a.total_jeux = j.total_jeux;
